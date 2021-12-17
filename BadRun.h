@@ -24,7 +24,7 @@ const Int_t badrun_run19_19p6_sub[nBadRun_run19_19p6][12];//subsystem: 0_goodrun
 */
 
 const Int_t mRunNameCount=2;
-TString mRunNameList[mRunNameCount]={"run19_19.6","run20_7.7"};
+const TString mRunNameList[mRunNameCount]={"run19_19.6","run20_7.7"};
 
 const Int_t run19_19p6_range[2]={20056032,20093036};
 const Int_t nBadRun_run19_19p6 =262;
