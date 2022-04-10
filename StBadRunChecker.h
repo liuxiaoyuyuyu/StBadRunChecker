@@ -9,7 +9,7 @@
 //______________________________________________________________________________
 class StBadRunChecker {
  public:
-  StBadRunChecker(TString Run="run19",TString RunEnergy="19.6");
+  StBadRunChecker(TString Run="run19",TString CollisionMode="col" ,TString RunEnergy="19.6",TString Species="auau");
   virtual ~StBadRunChecker(); /// Default destructor
  
   // Bad run rejection
@@ -25,7 +25,7 @@ class StBadRunChecker {
   Bool_t isBadRunBEMCTrigger(const Int_t RunId) ;
   Bool_t isBadRunMTD(const Int_t RunId) ;
   Bool_t isBadRunAnalysis(const Int_t RunId) ; 
-  Bool_t isBadRun(const Int_t RunId,const TString mSys) ; 
+  Bool_t isBadRun(const Int_t RunId,TString mSys) ; 
  private:
   //void readBadRunsFromHeaderFile(TString Run="run19",TString RunEnergy="19.6");
   void readBadRunsFromHeaderFile();
@@ -42,6 +42,8 @@ class StBadRunChecker {
   TString mSubSysName[12]={"Injection","TPC","bTOFStatus","bTOFPID","eTOF","EPD","VPD","BEMCStatus","BEMCPID","BEMCTrigger","MTD","Analysis"};
   TString mRun;
   TString mEnergy;
+  TString mColMode;
+  TString mSpecies;
   Int_t mRunIndex;
   ClassDef(StBadRunChecker, 0)
 };
