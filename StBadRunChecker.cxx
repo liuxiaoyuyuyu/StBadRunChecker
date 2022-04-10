@@ -17,10 +17,18 @@ using namespace std ;
 
 //______________________________________________________________________________
 // Default constructor
-StBadRunChecker::StBadRunChecker(TString Run,TString RunEnergy){
+StBadRunChecker::StBadRunChecker(TString Run,TString CollisionMode, TString RunEnergy,TString Species){
+    Run.ToLower();
+    RunEnergy.ToLower();
+    CollisionMode.ToLower();
+    Species.ToLower();
+    
     mRun=Run;
     mEnergy=RunEnergy;
-    TString name_tmp=mRun+"_"+mEnergy;
+    mColMode=CollisionMode;
+    mSpecies=Species;
+    TString name_tmp=mRun+"_"+mColMode+"_"+mEnergy+"_"+mSpecies;
+    mRunIndex=-1;
     for(int i=0;i<mRunNameCount;i++){
         if(name_tmp==mRunNameList[i]){
             mRunIndex=i;
@@ -37,53 +45,54 @@ StBadRunChecker::~StBadRunChecker() {
 }
 
 //______________________________________________________________________________
-
 void StBadRunChecker::readBadRunsFromHeaderFile() {
     switch(mRunIndex){
         case 0:
             for(int i=0;i<2;i++){
-                mRunRange.push_back(run19_19p6_range[i]);
+                mRunRange.push_back(run19_col_19p6_auau_range[i]);
             }
-            for(int i=0;i<nBadRun_run19_19p6;i++){
-                mBadRun_all.push_back(badrun_run19_19p6_all[i]);
+            for(int i=0;i<nBadRun_run19_col_19p6_auau;i++){
+                mBadRun_all.push_back(badrun_run19_col_19p6_auau_all[i]);
                 std::vector<Int_t> row;
                 for(int j=0;j<12;j++){
-                    row.push_back(badrun_run19_19p6_sub[i][j]);       
+                    row.push_back(badrun_run19_col_19p6_auau_sub[i][j]);       
                 }
                 mBadRun_sub.push_back(row);
             } 
-            cout<<"read in bad run list for "<<mRun<<" "<<mEnergy<<" GeV. "<<nBadRun_run19_19p6<<" bad runs in total."<<endl;
+            cout<<"read in bad run list for "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<" GeV. "<<nBadRun_run19_col_19p6_auau<<" bad runs in total."<<endl;
             break;
+        /*
         case 1:
             for(int i=0;i<2;i++){
-                mRunRange.push_back(run20_7p7_range[i]);
+                mRunRange.push_back(run19_col_14p6_auau_range[i]);
             }
-            for(int i=0;i<nBadRun_run20_7p7;i++){
-                mBadRun_all.push_back(badrun_run20_7p7_all[i]);
+            for(int i=0;i<nBadRun_run19_col_14p6_auau;i++){
+                mBadRun_all.push_back(badrun_run19_col_14p6_auau_all[i]);
                 std::vector<Int_t> row;
                 for(int j=0;j<12;j++){
-                    row.push_back(badrun_run20_7p7_sub[i][j]);       
+                    row.push_back(badrun_run19_col_14p6_auau_sub[i][j]);       
                 }
                 mBadRun_sub.push_back(row);
             } 
-            cout<<"read in bad run list for "<<mRun<<" "<<mEnergy<<" GeV. "<<nBadRun_run20_7p7<<" bad runs in total."<<endl;
+            cout<<"read in bad run list for "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<" GeV. "<<nBadRun_run19_col_14p6_auau<<" bad runs in total."<<endl;
             break;
+        */
         //Add more runs here
         default:
-            cout<<mRun<<" "<<mEnergy<<" GeV doesn't exist or the bad run list is not available yet.Exit!"<<endl;
+            cout<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<" GeV doesn't exist or the bad run list is not available yet.Exit!"<<endl;
             exit(0);
     }
 
 }
 
 
-Bool_t StBadRunChecker::isBadRun(const Int_t RunId, const TString mS){
+Bool_t StBadRunChecker::isBadRun(const Int_t RunId,TString mS){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
-    
+    mS.ToLower(); 
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
     if(iter == mBadRun_all.end()){
         return 0;//RunId is not a bad run 
@@ -96,6 +105,7 @@ Bool_t StBadRunChecker::isBadRun(const Int_t RunId, const TString mS){
             mSubSysName[iname].ToLower();
             //As long as this run was marked as a bad run for one of the sub systems, it is a bad run
             if(mS.Contains(mSubSysName[iname])){
+                cout<<"Check if this run is bad for: "<<mSubSysName[iname]<<endl;
                 isbad*=(1-mBadRun_sub[index][iname]);
             }
         }
@@ -106,7 +116,7 @@ Bool_t StBadRunChecker::isBadRun(const Int_t RunId, const TString mS){
 Bool_t StBadRunChecker::isInjection(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -123,7 +133,7 @@ Bool_t StBadRunChecker::isInjection(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunTPC(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -140,7 +150,7 @@ Bool_t StBadRunChecker::isBadRunTPC(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunbTOFStatus(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -157,7 +167,7 @@ Bool_t StBadRunChecker::isBadRunbTOFStatus(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunbTOFPID(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -174,7 +184,7 @@ Bool_t StBadRunChecker::isBadRunbTOFPID(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRuneTOF(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -191,7 +201,7 @@ Bool_t StBadRunChecker::isBadRuneTOF(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunEPD(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -208,7 +218,7 @@ Bool_t StBadRunChecker::isBadRunEPD(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunVPD(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -224,7 +234,7 @@ Bool_t StBadRunChecker::isBadRunVPD(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunBEMCStatus(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -241,7 +251,7 @@ Bool_t StBadRunChecker::isBadRunBEMCStatus(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunBEMCPID(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -258,7 +268,7 @@ Bool_t StBadRunChecker::isBadRunBEMCPID(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunBEMCTrigger(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -275,7 +285,7 @@ Bool_t StBadRunChecker::isBadRunBEMCTrigger(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunMTD(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -292,7 +302,7 @@ Bool_t StBadRunChecker::isBadRunMTD(const Int_t RunId){
 Bool_t StBadRunChecker::isBadRunAnalysis(const Int_t RunId){
     // Return true if a given run id is bad run
     if (RunId<mRunRange[0]||RunId>mRunRange[1]){
-        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<", "<<mEnergy<<"GeV. Exit!"<<endl;
+        cout<<"Warning: "<<RunId<<" is not in "<<mRun<<" "<<mColMode<<" "<<mSpecies<<" "<<mEnergy<<"GeV. Exit!"<<endl;
         exit(0);
     }
     vector<Int_t>::iterator iter = std::find(mBadRun_all.begin(), mBadRun_all.end(), RunId);
@@ -302,6 +312,6 @@ Bool_t StBadRunChecker::isBadRunAnalysis(const Int_t RunId){
     //return ( iter != mBadRun.end() ) ;
     else{
         int index = std::distance(mBadRun_all.begin(), iter);//index starts at zero
-        return (mBadRun_sub[index][11]);
+        return (mBadRun_sub[index][4]);
     }
 }
