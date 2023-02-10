@@ -20,7 +20,7 @@
 /*
 const Int_t nBadRun_run19_19p6 = 700;//all the bad runs no matter what the reason is 
 const Int_t badrun_run19_19p6_all[nBadRun_run19_19p6];//RunId
-const Int_t badrun_run19_19p6_sub[nBadRun_run19_19p6][12];//subsystem: 0_goodrun for the sub sys. 1_goodrun for the sub sys
+const Int_t badrun_run19_19p6_sub[nBadRun_run19_19p6][12];//subsystem: 0_goodrun for the sub sys. 1_badrun for the sub sys
 */
 
 const Int_t mRunNameCount=2;
